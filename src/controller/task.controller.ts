@@ -71,5 +71,21 @@ export const putTask = async(req:Request<{id:string},{},CreateTask>,res:Response
 export const deleteTask = async (req:Request<{id:string}>,res:Response)=>{
     const id = Number(req.params.id)
 
-    tasks.
+    const index = tasks.findIndex((task) => task.id = id)
+
+    if (index === -1) {
+        return res.status(404).json({
+          success: false,
+          message: "Task not found",
+        });
+    }
+
+    tasks.splice(index,1)
+
+    return res.status(200).json({
+            success:true,
+            message:"Task deleted successfully",
+            tasks
+        })
+
 }
