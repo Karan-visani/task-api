@@ -43,3 +43,33 @@ export const createTask= async(req:Request<{},{},CreateTask>,res:Response)=>{
     task,
     });
 }
+
+export const putTask = async(req:Request<{id:string},{},CreateTask>,res:Response) =>{
+    const id = Number(req.params.id)
+
+    const task = tasks.find((task)=>task.id === id)
+    if(!task){
+        return res.status(404).json({
+            success:false,
+            message:"No task found"
+        })
+    }
+
+    const {title,completed,priority} = req.body;
+
+    task.title = title
+    task.completed = completed
+    task.priority = priority
+
+    return res.status(200).json({
+            success:true,
+            message:"Task updated successfully",
+            task
+        })
+}
+
+export const deleteTask = async (req:Request<{id:string}>,res:Response)=>{
+    const id = Number(req.params.id)
+
+    tasks.
+}
