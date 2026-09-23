@@ -9,6 +9,23 @@ export const getTasks =async (req:Request,res:Response)=>{
 })
 }
 
+export const getTask =  (req:Request<{id:string}>,res:Response)=>{
+    const id = Number(req.params.id)
+
+    const task = tasks.find((task)=>task.id === id)
+    if(!task){
+        res.status(404).json({
+            success:false,
+            message:"No task found"
+        })
+    }
+
+    res.json({
+        success:true,
+        task
+    })
+}
+
 export const createTask= async(req:Request<{},{},CreateTask>,res:Response)=>{
     const {title,completed,priority} = req.body;
 
