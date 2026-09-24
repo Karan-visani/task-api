@@ -1,6 +1,7 @@
 import { Request, Response } from "express"
 import {tasks} from "../data/task"
 import { CreateTask } from "../types/task"
+import { NotFoundError } from "../errors/appError"
 
 export const getTasks =async (req:Request,res:Response)=>{
     res.json({
@@ -14,10 +15,7 @@ export const getTask =  (req:Request<{id:string}>,res:Response)=>{
 
     const task = tasks.find((task)=>task.id === id)
     if(!task){
-        res.status(404).json({
-            success:false,
-            message:"No task found"
-        })
+        throw new NotFoundError("Task not found");
     }
 
     res.json({
