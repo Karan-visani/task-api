@@ -6,4 +6,6 @@ export const createTaskSchema = z.object({
     priority : z.enum(["low","medium","high"])
 })
 
+export const updateTaskSchema = createTaskSchema;
+
 export type createTaskInput = z.infer<typeof createTaskSchema>
