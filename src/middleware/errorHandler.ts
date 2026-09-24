@@ -5,7 +5,10 @@ export const errorHandler = (err:unknown,req:Request,res:Response,next:NextFunct
     if(err instanceof AppError){
         return res.status(err.statusCode).json({
             success:false,
-            message:err.message
+            message:err.message,
+            ...(err.errors !== undefined &&{
+                errors:err.errors,
+            }) 
         })
     }
 

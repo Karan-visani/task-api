@@ -47,10 +47,7 @@ export const putTask = async(req:Request<{id:string},{},CreateTask>,res:Response
 
     const task = tasks.find((task)=>task.id === id)
     if(!task){
-        return res.status(404).json({
-            success:false,
-            message:"No task found"
-        })
+        throw new NotFoundError("Task not found");
     }
 
     const {title,completed,priority} = req.body;
@@ -72,10 +69,7 @@ export const deleteTask = async (req:Request<{id:string}>,res:Response)=>{
     const index = tasks.findIndex((task) => task.id = id)
 
     if (index === -1) {
-        return res.status(404).json({
-          success: false,
-          message: "Task not found",
-        });
+        throw new NotFoundError("Task not found");
     }
 
     tasks.splice(index,1)
