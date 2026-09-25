@@ -1,21 +1,32 @@
 import { Request, Response } from "express"
 import {tasks} from "../data/task"
-import { CreateTask } from "../types/task"
-import { NotFoundError } from "../errors/appError"
+import { CreateTask, Task } from "../types/task"
+import { AppError, NotFoundError } from "../errors/appError"
 
 export const getTasks =async (req:Request,res:Response)=>{
+    const user = res.locals.user
+    const userTasks = 
+    user.role === "admin" ? tasks : tasks.filter((tasks) => tasks.userId === user.id)
+
     res.json({
         success:true,
-        tasks
+        tasks:userTasks
 })
 }
 
 export const getTask =  (req:Request<{id:string}>,res:Response)=>{
+    
     const id = Number(req.params.id)
 
     const task = tasks.find((task)=>task.id === id)
     if(!task){
         throw new NotFoundError("Task not found");
+    }
+
+    const user = res.locals.user;
+
+    if (user.role !== "admin" && task.userId !== user.id) {
+      throw new AppError("Access denied", 403);
     }
 
     res.json({
@@ -25,13 +36,19 @@ export const getTask =  (req:Request<{id:string}>,res:Response)=>{
 }
 
 export const createTask= async(req:Request<{},{},CreateTask>,res:Response)=>{
+    console.log("CREATE TASK CONTROLLER HIT");
+  console.log("BODY:", req.body);
+  console.log("USER:", res.locals.user);
     const {title,completed,priority} = req.body;
+    const user = res.locals.user
 
-    const newTask : CreateTask = ({title,completed,priority})
 
-    const task = {
+    const task:Task = {
         id : tasks.length + 1,
-        ...newTask
+        title,
+        completed,
+        priority,
+        userId : user.id
     }
 
     tasks.push(task)
@@ -50,6 +67,12 @@ export const putTask = async(req:Request<{id:string},{},CreateTask>,res:Response
         throw new NotFoundError("Task not found");
     }
 
+    const user = res.locals.user
+
+    if (user.role !== "admin" && task.userId !== user.id) {
+      throw new AppError("Access denied", 403);
+    }
+
     const {title,completed,priority} = req.body;
 
     task.title = title
@@ -66,7 +89,7 @@ export const putTask = async(req:Request<{id:string},{},CreateTask>,res:Response
 export const deleteTask = async (req:Request<{id:string}>,res:Response)=>{
     const id = Number(req.params.id)
 
-    const index = tasks.findIndex((task) => task.id = id)
+    const index = tasks.findIndex((task) => task.id === id)
 
     if (index === -1) {
         throw new NotFoundError("Task not found");

@@ -2,10 +2,12 @@ import express from "express"
 import { createTask, deleteTask, getTask, getTasks, putTask } from "../controller/task.controller"
 import { validateBody } from "../middleware/validateBody"
 import { createTaskSchema, updateTaskSchema } from "../schemas/task.schema"
+import { authenticate } from "../middleware/authenticate"
+import { authorize } from "../middleware/authorize"
 export const taskRouter = express.Router()
 
-taskRouter.get("/",getTasks)
-taskRouter.get("/:id",getTask)
-taskRouter.post("/",validateBody(createTaskSchema),createTask)
-taskRouter.put("/:id",validateBody(updateTaskSchema),putTask)
-taskRouter.delete("/:id",deleteTask)
+taskRouter.get("/",authenticate,getTasks)
+taskRouter.get("/:id",authenticate,getTask)
+taskRouter.post("/",authenticate,validateBody(createTaskSchema),createTask)
+taskRouter.put("/:id",authenticate,validateBody(updateTaskSchema),putTask)
+taskRouter.delete("/:id",authenticate,authorize("admin"),deleteTask)
