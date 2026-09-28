@@ -3,7 +3,6 @@ import { LoginInput } from "../types/auth";
 import { users } from "../data/users";
 import { BadRequestError } from "../errors/appError";
 import  jwt  from "jsonwebtoken";
-import { success } from "zod";
 
 export const loginUser = async(req:Request<{},{},LoginInput>,res:Response) =>{
     const {email,password} = req.body
