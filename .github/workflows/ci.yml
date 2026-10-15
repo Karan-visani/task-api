@@ -32,6 +32,13 @@ jobs:
       NODE_ENV: test
 
     steps:
+    
+      - name: Debug package lock
+        run: |
+          node --version
+          npm --version
+          node -e "const p=require('./package.json'); const l=require('./package-lock.json'); console.log('package:',p.name,p.version); console.log('lock:',l.name,l.version,'lockfileVersion:',l.lockfileVersion); console.log('Prisma CLI:',p.devDependencies?.prisma); console.log('Prisma client:',p.dependencies?.['@prisma/client'])"
+
       - name: Install dependencies
         run: npm ci
 
