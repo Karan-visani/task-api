@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
-import { AuthUser } from "../types/auth";
-import { AppError } from "../errors/appError";
+import { AuthUser } from "../types/auth.js";
+import { AppError } from "../errors/appError.js";
 
 export const authorize = (...roles:AuthUser["role"][]) =>{
     return (req:Request,res:Response,next:NextFunction) => {

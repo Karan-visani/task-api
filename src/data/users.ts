@@ -1,4 +1,4 @@
-import { AuthUser } from "../types/auth";
+import { AuthUser } from "../types/auth.js";
 
 export interface User extends AuthUser {
   password: string;

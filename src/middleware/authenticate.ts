@@ -1,10 +1,11 @@
 import { NextFunction, Request, Response } from "express";
-import { AppError } from "../errors/appError";
+import { AppError } from "../errors/appError.js";
 import jwt from "jsonwebtoken";
-import { AuthUser } from "../types/auth";
+import { AuthUser } from "../types/auth.js";
+import prisma from "../db/prisma.js";
 
 
-export const authenticate = (req:Request,res:Response,next:NextFunction) =>{
+export const authenticate =async (req:Request,res:Response,next:NextFunction) =>{
 
     const token = req.cookies.token
 
@@ -19,7 +20,20 @@ export const authenticate = (req:Request,res:Response,next:NextFunction) =>{
       process.env.JWT_SECRET as string
     ) as AuthUser;
 
-    res.locals.user = decoded;
+
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.id },
+      select: {
+        id: true,
+        email: true,
+        role: true,
+      },
+    });
+
+    if (!user) {
+      throw new AppError("User no longer exists", 401);
+    }
+    res.locals.user = user;
 
     next();
   } catch {

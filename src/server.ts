@@ -1,10 +1,10 @@
 import "dotenv/config";
 import express from "express"
-import { taskRouter } from "./routes/task.routes"
-import { authRouter } from "./routes/auth.routes"
-import { errorHandler } from "./middleware/errorHandler"
+import { taskRouter } from "./routes/task.routes.js"
+import { authRouter } from "./routes/auth.routes.js"
+import { errorHandler } from "./middleware/errorHandler.js"
 import cookieParser from "cookie-parser";
-import app from "./app";
+import app from "./app.js";
 
 const PORT = 3000
 

@@ -1,12 +1,14 @@
 import { Request, Response } from "express"
-import {tasks} from "../data/task"
-import { CreateTask, Task } from "../types/task"
-import { AppError, NotFoundError } from "../errors/appError"
+import {tasks} from "../data/task.js"
+import { CreateTask, Task } from "../types/task.js"
+import { AppError, NotFoundError } from "../errors/appError.js"
+import prisma from "../db/prisma.js"
 
 export const getTasks =async (req:Request,res:Response)=>{
     const user = res.locals.user
-    const userTasks = 
-    user.role === "admin" ? tasks : tasks.filter((tasks) => tasks.userId === user.id)
+    const userTasks = await prisma.task.findMany({
+        where: user.role === "admin" ? {} : {userId:user.id}
+    })
 
     res.json({
         success:true,
@@ -14,11 +16,15 @@ export const getTasks =async (req:Request,res:Response)=>{
 })
 }
 
-export const getTask =  (req:Request<{id:string}>,res:Response)=>{
+export const getTask =async  (req:Request<{id:string}>,res:Response)=>{
     
     const id = Number(req.params.id)
 
-    const task = tasks.find((task)=>task.id === id)
+    const task = await prisma.task.findUnique({
+        where:{
+            id
+        }
+    })
     if(!task){
         throw new NotFoundError("Task not found");
     }
@@ -36,22 +42,18 @@ export const getTask =  (req:Request<{id:string}>,res:Response)=>{
 }
 
 export const createTask= async(req:Request<{},{},CreateTask>,res:Response)=>{
-    console.log("CREATE TASK CONTROLLER HIT");
-  console.log("BODY:", req.body);
-  console.log("USER:", res.locals.user);
     const {title,completed,priority} = req.body;
     const user = res.locals.user
 
 
-    const task:Task = {
-        id : tasks.length + 1,
-        title,
-        completed,
-        priority,
-        userId : user.id
-    }
-
-    tasks.push(task)
+    const task = await prisma.task.create({
+        data:{
+            title,
+            completed,
+            priority,
+            userId: user.id
+        }
+    })
 
     res.status(201).json({
     success: true,
@@ -59,48 +61,106 @@ export const createTask= async(req:Request<{},{},CreateTask>,res:Response)=>{
     });
 }
 
-export const putTask = async(req:Request<{id:string},{},CreateTask>,res:Response) =>{
-    const id = Number(req.params.id)
 
-    const task = tasks.find((task)=>task.id === id)
-    if(!task){
-        throw new NotFoundError("Task not found");
-    }
+export const putTask = async (
+  req: Request<{ id: string }, {}, CreateTask>,
+  res: Response
+) => {
+  const id = Number(req.params.id);
+  const user = res.locals.user;
+  const { title, completed, priority } = req.body;
 
-    const user = res.locals.user
-
-    if (user.role !== "admin" && task.userId !== user.id) {
-      throw new AppError("Access denied", 403);
-    }
-
-    const {title,completed,priority} = req.body;
-
-    task.title = title
-    task.completed = completed
-    task.priority = priority
+  // Admin can update any task
+  if (user.role === "admin") {
+    const task = await prisma.task.update({
+      where: { id },
+      data: { title, completed, priority },
+    });
 
     return res.status(200).json({
-            success:true,
-            message:"Task updated successfully",
-            task
-        })
-}
+      success: true,
+      message: "Task updated successfully",
+      task,
+    });
+  }
 
-export const deleteTask = async (req:Request<{id:string}>,res:Response)=>{
-    const id = Number(req.params.id)
+  // Regular users can update only their own tasks
+  const result = await prisma.task.updateMany({
+    where: {
+      id,
+      userId: user.id,
+    },
+    data: { title, completed, priority },
+  });
 
-    const index = tasks.findIndex((task) => task.id === id)
+  if (result.count === 0) {
+    const task = await prisma.task.findUnique({
+      where: { id },
+      select: { id: true },
+    });
 
-    if (index === -1) {
-        throw new NotFoundError("Task not found");
+    if (!task) {
+      throw new NotFoundError("Task not found");
     }
 
-    tasks.splice(index,1)
+    throw new AppError("Access denied", 403);
+  }
+
+  const updatedTask = await prisma.task.findUnique({
+    where: { id },
+  });
+
+  return res.status(200).json({
+    success: true,
+    message: "Task updated successfully",
+    task: updatedTask,
+  });
+};
+
+
+export const deleteTask = async (
+  req: Request<{ id: string }>,
+  res: Response
+) => {
+  const id = Number(req.params.id);
+  const user = res.locals.user;
+
+  // Admin can delete any task
+  if (user.role === "admin") {
+    const task = await prisma.task.delete({
+      where: { id },
+    });
 
     return res.status(200).json({
-            success:true,
-            message:"Task deleted successfully",
-            tasks
-        })
+      success: true,
+      message: "Task deleted successfully",
+      task,
+    });
+  }
 
-}
+  // Regular users can delete only their own tasks
+  const result = await prisma.task.deleteMany({
+    where: {
+      id,
+      userId: user.id,
+    },
+  });
+
+  if (result.count === 0) {
+    const task = await prisma.task.findUnique({
+      where: { id },
+      select: { id: true },
+    });
+
+    if (!task) {
+      throw new NotFoundError("Task not found");
+    }
+
+    throw new AppError("Access denied", 403);
+  }
+
+  return res.status(200).json({
+    success: true,
+    message: "Task deleted successfully",
+  });
+};

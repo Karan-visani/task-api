@@ -2,9 +2,9 @@ import "dotenv/config";
 
 import cookieParser from "cookie-parser";
 import express from "express"
-import { taskRouter } from "./routes/task.routes";
-import { authRouter } from "./routes/auth.routes";
-import { errorHandler } from "./middleware/errorHandler";
+import { taskRouter } from "./routes/task.routes.js";
+import { authRouter } from "./routes/auth.routes.js";
+import { errorHandler } from "./middleware/errorHandler.js";
 
 const app = express()
 

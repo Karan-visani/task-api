@@ -6,7 +6,6 @@ export class AppError extends Error{
         super(message)
         this.statusCode = statusCode
         this.errors = errors
-
         this.name = "AppError"
     }
 }
@@ -23,4 +22,10 @@ export class BadRequestError extends AppError{
         super(message,400,errors);
         this.name = "BadRequestError"
     }
+}
+export class ConflictError extends AppError {
+  constructor(message: string) {
+    super(message, 409);
+    this.name = "ConflictError";
+  }
 }

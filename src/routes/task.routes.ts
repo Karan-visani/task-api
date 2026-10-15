@@ -1,9 +1,9 @@
 import express from "express"
-import { createTask, deleteTask, getTask, getTasks, putTask } from "../controller/task.controller"
-import { validateBody } from "../middleware/validateBody"
-import { createTaskSchema, updateTaskSchema } from "../schemas/task.schema"
-import { authenticate } from "../middleware/authenticate"
-import { authorize } from "../middleware/authorize"
+import { createTask, deleteTask, getTask, getTasks, putTask } from "../controller/task.controller.js"
+import { validateBody } from "../middleware/validateBody.js"
+import { createTaskSchema, updateTaskSchema } from "../schemas/task.schema.js"
+import { authenticate } from "../middleware/authenticate.js"
+import { authorize } from "../middleware/authorize.js"
 export const taskRouter = express.Router()
 
 taskRouter.get("/",authenticate,getTasks)
