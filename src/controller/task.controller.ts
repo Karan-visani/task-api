@@ -1,11 +1,17 @@
 import { Request, Response } from "express"
 import {tasks} from "../data/task"
 import { CreateTask } from "../types/task"
+import { NotFoundError } from "../errors/appError"
 
 export const getTasks =async (req:Request,res:Response)=>{
+    const visibleTasks =
+        req.user!.role === "admin"
+            ? tasks
+            : tasks.filter((task) => task.ownerId === req.user!.id);
+
     res.json({
         success:true,
-        tasks
+        tasks:visibleTasks
 })
 }
 
@@ -14,10 +20,14 @@ export const getTask =  (req:Request<{id:string}>,res:Response)=>{
 
     const task = tasks.find((task)=>task.id === id)
     if(!task){
-        res.status(404).json({
-            success:false,
-            message:"No task found"
-        })
+        throw new NotFoundError("Task not found");
+    }
+
+    if (req.user!.role !== "admin" && task.ownerId !== req.user!.id) {
+        return res.status(403).json({
+            success: false,
+            message: "You do not have permission to access this task"
+        });
     }
 
     res.json({
@@ -29,18 +39,16 @@ export const getTask =  (req:Request<{id:string}>,res:Response)=>{
 export const createTask= async(req:Request<{},{},CreateTask>,res:Response)=>{
     const {title,completed,priority} = req.body;
 
-    const newTask : CreateTask = ({title,completed,priority})
+    
+    const ownerId = req.user!.id;
+    
+    const newTask = {id:tasks.length + 1 ,title,completed,priority,ownerId}
 
-    const task = {
-        id : tasks.length + 1,
-        ...newTask
-    }
-
-    tasks.push(task)
+    tasks.push(newTask)
 
     res.status(201).json({
     success: true,
-    task,
+    task:newTask,
     });
 }
 
@@ -49,10 +57,14 @@ export const putTask = async(req:Request<{id:string},{},CreateTask>,res:Response
 
     const task = tasks.find((task)=>task.id === id)
     if(!task){
-        return res.status(404).json({
-            success:false,
-            message:"No task found"
-        })
+        throw new NotFoundError("Task not found");
+    }
+
+    if (req.user!.role !== "admin" && task.ownerId !== req.user!.id) {
+    return res.status(403).json({
+        success: false,
+        message: "You do not have permission to update this task"
+    });
     }
 
     const {title,completed,priority} = req.body;
@@ -71,14 +83,21 @@ export const putTask = async(req:Request<{id:string},{},CreateTask>,res:Response
 export const deleteTask = async (req:Request<{id:string}>,res:Response)=>{
     const id = Number(req.params.id)
 
-    const index = tasks.findIndex((task) => task.id = id)
+    const index = tasks.findIndex((task) => task.id === id)
 
     if (index === -1) {
-        return res.status(404).json({
-          success: false,
-          message: "Task not found",
-        });
+        throw new NotFoundError("Task not found");
     }
+
+    const task = tasks[index];
+
+    if (req.user!.role !== "admin" && task.ownerId !== req.user!.id) {
+    return res.status(403).json({
+        success: false,
+        message: "You do not have permission to delete this task"
+    });
+    }
+    
 
     tasks.splice(index,1)
 

@@ -3,6 +3,7 @@ export interface Task  {
     title:string;
     completed:boolean;
     priority:"low" | "medium" | "high";
+    ownerId : number
 }
 
-export type CreateTask = Omit<Task,"id">
+export type CreateTask = Omit<Task,"id" | "ownerId">
