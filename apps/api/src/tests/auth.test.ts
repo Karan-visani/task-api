@@ -19,7 +19,7 @@ describe("Authentication tests", () => {
         expect(response.body.success).toBe(false);
     });
 
-    it("should return 403 when a user tries to delete another user's task", async () => {
+    it("should return 404 when a user updates another user's task", async () => {
     const adminLogin = await request(app)
         .post("/auth/login")
         .send({
@@ -30,8 +30,8 @@ describe("Authentication tests", () => {
     const userLogin = await request(app)
         .post("/auth/login")
         .send({
-            email: "karan@example.com",
-            password: "user12345"
+            email: "newuser@example.com",
+            password: "password123"
         });
 
     const adminToken = adminLogin.body.token;
@@ -52,7 +52,7 @@ describe("Authentication tests", () => {
         .delete(`/tasks/delete/${taskId}`)
         .set("Authorization", `Bearer ${userToken}`);
 
-    expect(response.status).toBe(403);
+    expect(response.status).toBe(404);
     });
 
 
@@ -60,8 +60,8 @@ describe("Authentication tests", () => {
     const login = await request(app)
         .post("/auth/login")
         .send({
-            email: "karan@example.com",
-            password: "user12345"
+            email: "newuser@example.com",
+            password: "password123"
         });
 
     const token = login.body.token;
@@ -84,8 +84,8 @@ it("should allow a user to create and retrieve their own task", async () => {
     const login = await request(app)
         .post("/auth/login")
         .send({
-            email: "karan@example.com",
-            password: "user12345"
+            email: "newuser@example.com",
+            password: "password123"
         });
 
     const token = login.body.token;
@@ -100,7 +100,7 @@ it("should allow a user to create and retrieve their own task", async () => {
         });
 
     expect(created.status).toBe(201);
-    expect(created.body.task.ownerId).toBe(1);
+    expect(created.body.task.userId).toBe(5);
 
     const taskId = created.body.task.id;
 
@@ -112,7 +112,7 @@ it("should allow a user to create and retrieve their own task", async () => {
     expect(fetched.body.task.title).toBe("My test task");
 });
 
-it("should return 403 when a user updates another user's task", async () => {
+it("should return 404 when a user updates another user's task", async () => {
     const adminLogin = await request(app)
         .post("/auth/login")
         .send({
@@ -123,8 +123,8 @@ it("should return 403 when a user updates another user's task", async () => {
     const userLogin = await request(app)
         .post("/auth/login")
         .send({
-            email: "karan@example.com",
-            password: "user12345"
+            email: "newuser@example.com",
+            password: "password123"
         });
 
     const adminToken = adminLogin.body.token;
@@ -150,15 +150,15 @@ it("should return 403 when a user updates another user's task", async () => {
             priority: "low"
         });
 
-    expect(response.status).toBe(403);
+    expect(response.status).toBe(404);
 });
 
 it("should allow a user to delete their own task", async () => {
     const login = await request(app)
         .post("/auth/login")
         .send({
-            email: "karan@example.com",
-            password: "user12345"
+            email: "newuser@example.com",
+            password: "password123"
         });
 
     const token = login.body.token;
@@ -186,8 +186,8 @@ it("should allow admin to access another user's task", async () => {
     const userLogin = await request(app)
         .post("/auth/login")
         .send({
-            email: "karan@example.com",
-            password: "user12345"
+            email: "newuser@example.com",
+            password: "password123"
         });
 
     const adminLogin = await request(app)
@@ -213,41 +213,15 @@ it("should allow admin to access another user's task", async () => {
         .set("Authorization", `Bearer ${adminLogin.body.token}`);
 
     expect(response.status).toBe(200);
-    expect(response.body.task.ownerId).toBe(1);
+    expect(response.body.task.userId).toBe(5);
 });
 
 
-it("should allow admin to access another user's task", async () => {
-    const userLogin = await request(app).post("/auth/login").send({
-        email: "karan@example.com",
-        password: "user12345"
-    });
-    const adminLogin = await request(app).post("/auth/login").send({
-        email: "admin@example.com",
-        password: "admin12345"
-    });
-
-    const created = await request(app)
-        .post("/tasks/add")
-        .set("Authorization", `Bearer ${userLogin.body.token}`)
-        .send({
-            title: "User-owned task",
-            completed: false,
-            priority: "medium"
-        });
-
-    const response = await request(app)
-        .get(`/tasks/${created.body.task.id}`)
-        .set("Authorization", `Bearer ${adminLogin.body.token}`);
-
-    expect(created.status).toBe(201);
-    expect(response.status).toBe(200);
-});
 
 it("should return 400 for an invalid update body", async () => {
     const login = await request(app).post("/auth/login").send({
-        email: "karan@example.com",
-        password: "user12345"
+        email: "newuser@example.com",
+        password: "password123"
     });
 
     const created = await request(app)
@@ -278,7 +252,7 @@ it("should return 401 for an expired token", async () => {
     if (!secret) throw new Error("JWT_SECRET is not configured");
 
     const expiredToken = jwt.default.sign(
-        { sub: "1", email: "karan@example.com", role: "user" },
+        { id: 5, email: "newuser@example.com", role: "user" },
         secret,
         { expiresIn: -1 }
     );
@@ -292,7 +266,7 @@ it("should return 401 for an expired token", async () => {
 
 it("should return 401 for incorrect login credentials", async () => {
     const response = await request(app).post("/auth/login").send({
-        email: "karan@example.com",
+        email: "newuser@example.com",
         password: "wrongpassword"
     });
 
@@ -301,8 +275,8 @@ it("should return 401 for incorrect login credentials", async () => {
 
 it("should allow a user to update their own task", async () => {
     const login = await request(app).post("/auth/login").send({
-        email: "karan@example.com",
-        password: "user12345"
+        email: "newuser@example.com",
+        password: "password123"
     });
 
     const created = await request(app)

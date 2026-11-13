@@ -1,8 +1,9 @@
 import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { AuthPayload } from "../types/auth";
+import prisma from "../config/database";
 
-export const authenticate = (req:Request,res:Response,next:NextFunction) =>{
+export const authenticate = async(req:Request,res:Response,next:NextFunction) =>{
     const authHeader = req.headers.authorization;
 
     if(!authHeader){
@@ -33,9 +34,8 @@ export const authenticate = (req:Request,res:Response,next:NextFunction) =>{
 
     if (
         typeof decoded === "string" ||
-        typeof decoded.id !== "number" ||
-        typeof decoded.email !== "string" ||
-        (decoded.role !== "user" && decoded.role !== "admin")
+        typeof decoded.id !== "number" 
+        
     ) {
         return res.status(401).json({
             success: false,
@@ -43,14 +43,30 @@ export const authenticate = (req:Request,res:Response,next:NextFunction) =>{
         });
     }
 
-    const user: AuthPayload = {
-        id: decoded.id,
-        email: decoded.email,
-        role: decoded.role
-    };
+    const user = await prisma.user.findUnique({
+            where: {
+                id: decoded.id,
+            },
+        });
 
-    req.user = user;
-    next();
+        if (!user) {
+            return res.status(401).json({
+                success: false,
+                message: "User no longer exists",
+            });
+        }
+
+        const authUser: AuthPayload = {
+            id: user.id,
+            email: user.email,
+            role: user.role as "user" | "admin",
+        };
+
+        req.user = authUser;
+
+        next();
+
+    
     } catch {
         return res.status(401).json({
             success: false,
@@ -58,5 +74,4 @@ export const authenticate = (req:Request,res:Response,next:NextFunction) =>{
         });
     }
 
-    next()
 }
