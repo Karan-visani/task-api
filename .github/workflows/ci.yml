@@ -55,6 +55,9 @@ jobs:
       - name: Run database migrations
         run: pnpm --filter api exec prisma migrate deploy --config ../../prisma7.config.ts
 
+      - name: Seed test database
+        run: pnpm --filter api seed
+
       - name: Lint
         run: pnpm lint
 
