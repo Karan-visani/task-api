@@ -1,3 +1,4 @@
+import prisma from '../config/database';
 import { describe, it, expect } from 'vitest';
 import request from 'supertest';
 import app from '../app';
@@ -91,7 +92,11 @@ describe('Authentication tests', () => {
       });
 
     expect(created.status).toBe(201);
-    expect(created.body.task.userId).toBe(5);
+    const user = await prisma.user.findUnique({
+      where: { email: 'newuser@example.com' },
+    });
+    expect(user).not.toBeNull();
+    expect(created.body.task.userId).toBe(user!.id);
 
     const taskId = created.body.task.id;
 
@@ -194,7 +199,11 @@ describe('Authentication tests', () => {
       .set('Authorization', `Bearer ${adminLogin.body.token}`);
 
     expect(response.status).toBe(200);
-    expect(response.body.task.userId).toBe(5);
+    const user = await prisma.user.findUnique({
+      where: { email: 'newuser@example.com' },
+    });
+    expect(user).not.toBeNull();
+    expect(response.body.task.userId).toBe(user!.id);
   });
 
   it('should return 400 for an invalid update body', async () => {
