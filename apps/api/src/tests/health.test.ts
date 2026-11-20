@@ -1,15 +1,15 @@
-import { describe, it, expect } from "vitest";
-import request from "supertest";
-import app from "../app";
+import { describe, it, expect } from 'vitest';
+import request from 'supertest';
+import app from '../app';
 
-describe("GET /health", () => {
-    it("should return 200 and a healthy message", async () => {
-        const response = await request(app).get("/health");
+describe('GET /health', () => {
+  it('should return 200 and a healthy message', async () => {
+    const response = await request(app).get('/health');
 
-        expect(response.status).toBe(200);
-        expect(response.body).toEqual({
-            success: true,
-            message: "API is healthy"
-        });
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      success: true,
+      message: 'API is healthy',
     });
+  });
 });

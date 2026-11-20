@@ -1,0 +1,10 @@
+node_modules
+.next
+dist
+build
+out
+coverage
+pnpm-lock.yaml
+.agents
+apps/api/src/generated
+next-env.d.ts

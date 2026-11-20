@@ -1,39 +1,38 @@
 export class AppError extends Error {
-    statusCode: number;
+  statusCode: number;
 
-    constructor(message: string, statusCode: number) {
-        super(message);
-        this.statusCode = statusCode;
-        this.name = "AppError";
-    }
+  constructor(message: string, statusCode: number) {
+    super(message);
+    this.statusCode = statusCode;
+    this.name = 'AppError';
+  }
 }
 
 export class NotFoundError extends AppError {
-    constructor(message: string) {
-        super(message, 404);
-        this.name = "NotFoundError";
-    }
+  constructor(message: string) {
+    super(message, 404);
+    this.name = 'NotFoundError';
+  }
 }
 
 export class BadRequestError extends AppError {
-    constructor(message: string) {
-        super(message, 400);
-        this.name = "BadRequestError";
-    }
+  constructor(message: string) {
+    super(message, 400);
+    this.name = 'BadRequestError';
+  }
 }
 
-
 export type FieldValidationError = {
-    field: string;
-    message: string;
+  field: string;
+  message: string;
 };
 
 export class ValidationError extends AppError {
-    errors: FieldValidationError[];
+  errors: FieldValidationError[];
 
-    constructor(errors: FieldValidationError[]) {
-        super("Validation failed", 400);
-        this.name = "ValidationError";
-        this.errors = errors;
-    }
+  constructor(errors: FieldValidationError[]) {
+    super('Validation failed', 400);
+    this.name = 'ValidationError';
+    this.errors = errors;
+  }
 }

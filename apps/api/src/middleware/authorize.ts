@@ -1,26 +1,22 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response, NextFunction } from 'express';
 
-export const authorize = (...allowedRoles: ("user" | "admin")[]) => {
-    return (
-        req: Request,
-        res: Response,
-        next: NextFunction
-    ) => {
+export const authorize = (...allowedRoles: ('user' | 'admin')[]) => {
+  return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) {
-        return res.status(401).json({
-            success: false,
-            message: "Authentication required"
-        });
+      return res.status(401).json({
+        success: false,
+        message: 'Authentication required',
+      });
     }
 
     if (!allowedRoles.includes(req.user.role)) {
-        return res.status(403).json({
-            success: false,
-            message: "You do not have permission to perform this action"
-        });
+      return res.status(403).json({
+        success: false,
+        message: 'You do not have permission to perform this action',
+      });
     }
 
     next();
-        next();
-    };
+    next();
+  };
 };
