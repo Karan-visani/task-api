@@ -1,3 +1,4 @@
+import './docs/zod-openapi';
 import 'dotenv/config';
 
 import express from 'express';

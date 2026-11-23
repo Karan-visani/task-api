@@ -1,10 +1,10 @@
 import {
+  extendZodWithOpenApi,
   OpenAPIRegistry,
   OpenApiGeneratorV3,
-  extendZodWithOpenApi,
 } from '@asteasolutions/zod-to-openapi';
-
-import { z } from 'zod';
+import { createRequire } from 'node:module';
+import { resolve } from 'node:path';
 
 import {
   CreateTaskInputSchema,
@@ -13,6 +13,10 @@ import {
   UpdateTaskInputSchema,
   UserSchema,
 } from '@task-api/shared';
+
+// Shared schemas are CommonJS, so register OpenAPI extensions on that Zod instance.
+const commonJsRequire = createRequire(resolve(process.cwd(), 'package.json'));
+const { z } = commonJsRequire('zod') as typeof import('zod');
 
 extendZodWithOpenApi(z);
 
