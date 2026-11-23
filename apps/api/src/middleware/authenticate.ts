@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { AuthPayload } from '../types/auth';
 import prisma from '../config/database';
+import { env } from '../config/env';
 
 export const authenticate = async (
   req: Request,
@@ -26,11 +27,7 @@ export const authenticate = async (
     });
   }
 
-  const secret = process.env.JWT_SECRET;
-
-  if (!secret) {
-    throw new Error('JWT_SECRET is not configured');
-  }
+  const secret = env.JWT_SECRET;
 
   try {
     const decoded = jwt.verify(token, secret);

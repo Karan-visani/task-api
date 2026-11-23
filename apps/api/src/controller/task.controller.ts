@@ -1,21 +1,52 @@
 import { Request, Response } from 'express';
-import { CreateTask } from '../types/task';
+import {
+  CreateTaskInput,
+  TaskQuerySchema,
+  UpdateTaskInput,
+} from '@task-api/shared';
 import { NotFoundError } from '../errors/appError';
 import prisma from '../config/database';
 
 export const getTasks = async (req: Request, res: Response) => {
-  // const visibleTasks =
-  //     req.user!.role === "admin"
-  //         ? tasks
-  //         : tasks.filter((task) => task.ownerId === req.user!.id);  normal way
+  const { status, cursor, limit, order } = TaskQuerySchema.parse(req.query);
 
-  const visibleTasks = await prisma.task.findMany({
-    where: req.user!.role === 'admin' ? {} : { userId: req.user!.id }, //prisma way
+  const cursorCondition = cursor
+    ? {
+        id: order === 'asc' ? { gt: cursor } : { lt: cursor },
+      }
+    : {};
+
+  const where = {
+    ...(req.user!.role === 'admin' ? {} : { userId: req.user!.id }),
+
+    ...(status
+      ? {
+          completed: status === 'completed',
+        }
+      : {}),
+
+    ...cursorCondition,
+  };
+
+  const tasks = await prisma.task.findMany({
+    where,
+    orderBy: {
+      id: order,
+    },
+    take: limit + 1,
   });
 
+  const hasNextPage = tasks.length > limit;
+
+  if (hasNextPage) {
+    tasks.pop();
+  }
+
+  const nextCursor = hasNextPage ? (tasks.at(-1)?.id ?? null) : null;
+
   res.json({
-    success: true,
-    tasks: visibleTasks,
+    data: tasks,
+    nextCursor,
   });
 };
 
@@ -49,7 +80,7 @@ export const getTask = async (req: Request<{ id: string }>, res: Response) => {
 };
 
 export const createTask = async (
-  req: Request<Record<string, never>, unknown, CreateTask>,
+  req: Request<Record<string, never>, unknown, CreateTaskInput>,
   res: Response,
 ) => {
   const { title, completed, priority } = req.body;
@@ -74,7 +105,7 @@ export const createTask = async (
 };
 
 export const putTask = async (
-  req: Request<{ id: string }, unknown, CreateTask>,
+  req: Request<{ id: string }, unknown, UpdateTaskInput>,
   res: Response,
 ) => {
   const id = Number(req.params.id);

@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import prisma from '../config/database';
 import bcrypt from 'bcrypt';
+import { env } from '../config/env';
 
 export const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
@@ -28,10 +29,7 @@ export const login = async (req: Request, res: Response) => {
     });
   }
 
-  const secret = process.env.JWT_SECRET;
-  if (!secret) {
-    throw new Error('JWT_SECRET is not configured');
-  }
+  const secret = env.JWT_SECRET;
 
   const token = jwt.sign(
     {

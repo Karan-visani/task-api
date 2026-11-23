@@ -6,12 +6,31 @@ import { authRouter } from './routes/auth.routes';
 import { errorHandler } from './middleware/errorHandler';
 import { requestLogger } from './middleware/requestLogger';
 import { authenticate } from './middleware/authenticate';
+import helmet from 'helmet';
+import cors from 'cors';
+import swaggerUi from 'swagger-ui-express';
+import { env } from './config/env';
+import { generateOpenAPIDocument } from './docs/openapi';
 
 const app = express();
+app.use(helmet());
 
-app.use(express.json());
+app.use(
+  cors({
+    origin: env.FRONTEND_URL,
+  }),
+);
 
+app.use(express.json({ limit: '10kb' }));
 app.use(requestLogger);
+
+const openAPIDocument = generateOpenAPIDocument();
+
+app.use('/api/v1/docs', swaggerUi.serve);
+app.get('/api/v1/docs', swaggerUi.setup(openAPIDocument));
+
+app.use('/api/v1/auth', authRouter);
+app.use('/api/v1/tasks', authenticate, taskRouter);
 app.use('/auth', authRouter);
 app.use('/tasks', authenticate, taskRouter);
 app.get('/health', (_req, res) => {

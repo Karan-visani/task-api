@@ -1,5 +1,16 @@
 {
   "name": "@task-api/shared",
   "version": "1.0.0",
-  "private": true
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "zod": "^4.6.7"
+  }
 }

@@ -7,11 +7,11 @@ import {
   putTask,
 } from '../controller/task.controller';
 import { validateBody } from '../middleware/validateBody';
-import { createTaskSchema } from '../validation/task.schema';
+import { CreateTaskInputSchema, UpdateTaskInputSchema } from '@task-api/shared';
 export const taskRouter = express.Router();
 
 taskRouter.get('/', getTasks);
 taskRouter.get('/:id', getTask);
-taskRouter.post('/add', validateBody(createTaskSchema), createTask);
-taskRouter.put('/update/:id', validateBody(createTaskSchema), putTask);
+taskRouter.post('/add', validateBody(CreateTaskInputSchema), createTask);
+taskRouter.put('/update/:id', validateBody(UpdateTaskInputSchema), putTask);
 taskRouter.delete('/delete/:id', deleteTask);
