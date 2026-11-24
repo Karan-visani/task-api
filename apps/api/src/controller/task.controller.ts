@@ -30,12 +30,18 @@ export const getTasks = async (req: Request, res: Response) => {
 
   const tasks = await prisma.task.findMany({
     where,
+    include: {
+      user: {
+        select: {
+          name: true,
+        },
+      },
+    },
     orderBy: {
       id: order,
     },
     take: limit + 1,
   });
-
   const hasNextPage = tasks.length > limit;
 
   if (hasNextPage) {

@@ -43,10 +43,16 @@ export const login = async (req: Request, res: Response) => {
     },
   );
 
+  res.cookie('token', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 60 * 60 * 1000,
+  });
+
   return res.status(201).json({
     success: true,
     message: 'Login Successful',
-    token,
   });
 };
 
@@ -86,5 +92,25 @@ export const signup = async (req: Request, res: Response) => {
       email: user.email,
       role: user.role,
     },
+  });
+};
+
+export const logout = async (req: Request, res: Response) => {
+  res.clearCookie('token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+  });
+
+  return res.status(200).json({
+    success: true,
+    message: 'Logout successful',
+  });
+};
+
+export const getMe = async (req: Request, res: Response) => {
+  return res.status(200).json({
+    success: true,
+    user: req.user,
   });
 };

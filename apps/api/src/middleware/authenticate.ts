@@ -9,21 +9,12 @@ export const authenticate = async (
   res: Response,
   next: NextFunction,
 ) => {
-  const authHeader = req.headers.authorization;
+  const token = req.cookies.token;
 
-  if (!authHeader) {
+  if (!token) {
     return res.status(401).json({
       success: false,
-      message: 'Authorization header is missing',
-    });
-  }
-
-  const [scheme, token] = authHeader.split(' ');
-
-  if (scheme !== 'Bearer' || !token) {
-    return res.status(401).json({
-      success: false,
-      message: 'Invalid authorization format. Use Bearer <token>',
+      message: 'Authentication cookie is missing',
     });
   }
 
@@ -54,6 +45,7 @@ export const authenticate = async (
 
     const authUser: AuthPayload = {
       id: user.id,
+      name: user.name,
       email: user.email,
       role: user.role as 'user' | 'admin',
     };
@@ -62,6 +54,12 @@ export const authenticate = async (
 
     next();
   } catch {
+    res.clearCookie('token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+    });
+
     return res.status(401).json({
       success: false,
       message: 'Invalid or expired token',

@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:18
+    container_name: task-api-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: '${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in a local .env file}'
+      POSTGRES_DB: task_api_db
+    ports:
+      - '5433:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql
+
+volumes:
+  postgres_data:

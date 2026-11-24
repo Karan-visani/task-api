@@ -1,44 +1,90 @@
-const tasks = [
-  {
-    title: 'Finish Next.js UI',
-    status: 'In Progress',
-  },
-  {
-    title: 'Review API documentation',
-    status: 'Pending',
-  },
-  {
-    title: 'Complete TypeScript practice',
-    status: 'Completed',
-  },
-];
+'use client';
+
+import { getTasks } from '@/lib/api';
+import { useQuery } from '@tanstack/react-query';
 
 export function RecentTasks() {
-  return (
-    <section>
-      <div className="mb-4">
-        <h2 className="text-lg font-semibold">Recent Tasks</h2>
-        <p className="text-sm text-muted-foreground">
-          Your latest tasks at a glance.
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ['tasks', { limit: 5, order: 'desc' }],
+    queryFn: () =>
+      getTasks({
+        limit: 5,
+        order: 'desc',
+      }),
+    staleTime: 30_000,
+    retry: false,
+  });
+
+  if (isLoading) {
+    return (
+      <div className="rounded-xl border p-6">
+        <h2 className="font-semibold">Recent Tasks</h2>
+
+        <div className="mt-6 space-y-4">
+          <div className="h-12 animate-pulse rounded-md bg-muted" />
+          <div className="h-12 animate-pulse rounded-md bg-muted" />
+          <div className="h-12 animate-pulse rounded-md bg-muted" />
+        </div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="rounded-xl border p-6">
+        <h2 className="font-semibold">Recent Tasks</h2>
+
+        <p className="mt-4 text-sm text-destructive">
+          Failed to load recent tasks.
+        </p>
+
+        <p className="mt-1 text-xs text-muted-foreground">
+          {error instanceof Error ? error.message : 'Something went wrong.'}
         </p>
       </div>
+    );
+  }
 
-      <div className="overflow-hidden rounded-xl border">
-        {tasks.map((task, index) => (
-          <div
-            key={task.title}
-            className={`flex items-center justify-between p-4 ${
-              index !== tasks.length - 1 ? 'border-b' : ''
-            }`}
-          >
-            <p className="text-sm font-medium">{task.title}</p>
+  const tasks = data?.data ?? [];
 
-            <span className="rounded-full bg-muted px-3 py-1 text-xs font-medium">
-              {task.status}
-            </span>
-          </div>
-        ))}
+  return (
+    <div className="rounded-xl border p-6">
+      <div>
+        <h2 className="font-semibold">Recent Tasks</h2>
+
+        <p className="mt-1 text-sm text-muted-foreground">Your latest tasks</p>
       </div>
-    </section>
+
+      {tasks.length === 0 ? (
+        <div className="mt-6 rounded-lg border border-dashed p-8 text-center">
+          <p className="font-medium">No tasks yet</p>
+
+          <p className="mt-1 text-sm text-muted-foreground">
+            Create your first task to see it here.
+          </p>
+        </div>
+      ) : (
+        <div className="mt-6 divide-y">
+          {tasks.map((task) => (
+            <div
+              key={task.id}
+              className="flex items-center justify-between py-4"
+            >
+              <div>
+                <h3 className="font-medium">{task.title}</h3>
+
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Priority: {task.priority}
+                </p>
+              </div>
+
+              <span className="text-sm font-medium">
+                {task.completed ? 'Completed' : 'Pending'}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

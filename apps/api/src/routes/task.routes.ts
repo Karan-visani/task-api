@@ -12,6 +12,6 @@ export const taskRouter = express.Router();
 
 taskRouter.get('/', getTasks);
 taskRouter.get('/:id', getTask);
-taskRouter.post('/add', validateBody(CreateTaskInputSchema), createTask);
-taskRouter.put('/update/:id', validateBody(UpdateTaskInputSchema), putTask);
-taskRouter.delete('/delete/:id', deleteTask);
+taskRouter.post('/', validateBody(CreateTaskInputSchema), createTask);
+taskRouter.put('/:id', validateBody(UpdateTaskInputSchema), putTask);
+taskRouter.delete('/:id', deleteTask);

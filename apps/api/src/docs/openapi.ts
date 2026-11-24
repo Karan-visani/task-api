@@ -10,6 +10,7 @@ import {
   CreateTaskInputSchema,
   TaskQuerySchema,
   TaskSchema,
+  TaskWithUserSchema,
   UpdateTaskInputSchema,
   UserSchema,
 } from '@task-api/shared';
@@ -25,6 +26,8 @@ export const registry = new OpenAPIRegistry();
 registry.register('User', UserSchema.clone());
 
 registry.register('Task', TaskSchema.clone());
+
+registry.register('TaskWithUser', TaskWithUserSchema.clone());
 
 registry.register('CreateTaskInput', CreateTaskInputSchema.clone());
 
@@ -84,7 +87,7 @@ registry.registerPath({
               data: {
                 type: 'array',
                 items: {
-                  $ref: '#/components/schemas/Task',
+                  $ref: '#/components/schemas/TaskWithUser',
                 },
               },
               nextCursor: {
